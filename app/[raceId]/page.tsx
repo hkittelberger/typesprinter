@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useReducer } from "react";
+import { useEffect, useReducer, useState } from "react";
 import { useParams } from "next/navigation";
 import { id, tx } from "@instantdb/react";
 import useLocalStorage from "use-local-storage";
@@ -68,7 +68,12 @@ export default function RacePage() {
 }
 
 const Typing = ({ race }: { race?: Race & { entrants: Entrant[] } }) => {
+  const raceHasStartTime = !!race?.startedAt;
+  const msInFuture = race?.startedAt ? race.startedAt - Date.now() : null;
+  const inRace = raceHasStartTime && msInFuture && msInFuture < 0;
+
   const [ownedRaceIds] = useLocalStorage<string[]>("ownedRaceIds", []);
+  const [text, setText] = useState("");
 
   const [, forceUpdate] = useReducer((x) => x + 1, 0);
 
@@ -84,6 +89,18 @@ const Typing = ({ race }: { race?: Race & { entrants: Entrant[] } }) => {
     forceUpdateRecursive();
   }, [race?.startedAt]);
 
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Backspace") {
+        setText(text.slice(0, -1));
+      } else if (e.key.length === 1) {
+        setText(text + e.key);
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [text]);
+
   if (!race) {
     return <div />;
   }
@@ -92,7 +109,7 @@ const Typing = ({ race }: { race?: Race & { entrants: Entrant[] } }) => {
     db.transact(tx.races[race.id].update({ startedAt: Date.now() + 5_000 }));
   };
 
-  if (!race.startedAt) {
+  if (!raceHasStartTime) {
     const isOwner = ownedRaceIds.includes(race.id);
     return (
       <div className="p-4 bg-white rounded-xl ring-1 ring-gray-900/10 shadow-sm space-y-4">
@@ -139,11 +156,9 @@ const Typing = ({ race }: { race?: Race & { entrants: Entrant[] } }) => {
     );
   }
 
-  const msInFuture = race?.startedAt ? race.startedAt - Date.now() : null;
-
-  if (msInFuture && msInFuture > 0) {
+  if (raceHasStartTime && !inRace && msInFuture) {
     return (
-      <div className="p-4 bg-white rounded-xl ring-1 ring-gray-900/10 shadow-sm space-y-4">
+      <div className="p-4 bg-white rounded-xl ring-1 ring-gray-900/10 shadow-sm">
         <p className="text-xl font-bold">
           Starting in {Math.ceil(msInFuture / 1_000)}...
         </p>
@@ -151,7 +166,18 @@ const Typing = ({ race }: { race?: Race & { entrants: Entrant[] } }) => {
     );
   }
 
-  return <div>{race.text}</div>;
+  return (
+    <div className="p-4 bg-white rounded-xl ring-1 ring-gray-900/10 shadow-sm">
+      <div className="text-lg font-mono">{race.text}</div>
+
+      <div className="mt-4 p-4 rounded-lg bg-gray-50 border border-gray-300">
+        <p className="text-lg font-mono">
+          {text}
+          <span className="translate-y-1 inline-block w-px h-5 bg-gray-900 animate-blink" />
+        </p>
+      </div>
+    </div>
+  );
 };
 
 const Profile = ({
