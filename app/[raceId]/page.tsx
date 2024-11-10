@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useReducer, useState } from "react";
+import { useEffect, useReducer, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import { id, tx } from "@instantdb/react";
 import useLocalStorage from "use-local-storage";
@@ -80,26 +80,12 @@ const Typing = ({ race }: { race?: Race & { entrants: Entrant[] } }) => {
   useEffect(() => {
     const forceUpdateRecursive = () => {
       forceUpdate();
-
-      const msInPast = race?.startedAt ? Date.now() - race?.startedAt : null;
-      if (!(msInPast && msInPast > 1_000)) {
-        setTimeout(forceUpdateRecursive, 500);
-      }
+      setTimeout(forceUpdateRecursive, 500);
     };
     forceUpdateRecursive();
   }, [race?.startedAt]);
 
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === "Backspace") {
-        setText(text.slice(0, -1));
-      } else if (e.key.length === 1) {
-        setText(text + e.key);
-      }
-    };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, [text]);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   if (!race) {
     return <div />;
@@ -170,12 +156,20 @@ const Typing = ({ race }: { race?: Race & { entrants: Entrant[] } }) => {
     <div className="p-4 bg-white rounded-xl ring-1 ring-gray-900/10 shadow-sm">
       <div className="text-lg font-mono">{race.text}</div>
 
-      <div className="mt-4 p-4 rounded-lg bg-gray-50 border border-gray-300">
-        <p className="text-lg font-mono">
-          {text}
-          <span className="translate-y-1 inline-block w-px h-5 bg-gray-900 animate-blink" />
-        </p>
-      </div>
+      <textarea
+        ref={textareaRef}
+        value={text}
+        onChange={(e) => {
+          const value = e.target.value;
+          const changeLength = value.length - text.length;
+          if (changeLength > 1) {
+            return;
+          }
+          setText(value);
+        }}
+        className="mt-4 w-full rounded-lg border-gray-300 bg-gray-50 font-mono text-lg"
+        autoFocus
+      ></textarea>
     </div>
   );
 };
