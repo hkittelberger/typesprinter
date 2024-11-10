@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useReducer, useRef, useState } from "react";
+import { Fragment, useEffect, useReducer, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import { id, tx } from "@instantdb/react";
 import useLocalStorage from "use-local-storage";
@@ -30,7 +30,7 @@ export default function RacePage() {
 
   useEffect(() => {
     db.transact([
-      tx.entrants[entrantId].update({ name, team, progress: 0 }),
+      tx.entrants[entrantId].update({ name, team }),
       tx.races[raceId].link({ entrants: entrantId }),
     ]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -53,6 +53,7 @@ export default function RacePage() {
           Start another race
         </span>
       </Link>
+
       <div className="mt-4 grid grid-cols-[1fr_350px] gap-x-4">
         <Typing race={race} entrantId={entrantId} />
         <Profile
@@ -62,6 +63,10 @@ export default function RacePage() {
           setTeam={setTeam}
           entrantId={entrantId}
         />
+      </div>
+
+      <div className="mt-4">
+        <Results race={race} />
       </div>
     </div>
   );
@@ -172,7 +177,7 @@ const Typing = ({
 
     db.transact(
       tx.entrants[entrantId].update({
-        progress: value.length / race.text.length,
+        progress: Math.min(value.length / race.text.length, 1),
       })
     );
 
@@ -201,7 +206,7 @@ const Typing = ({
       ></textarea>
 
       {invalid && (
-        <p className="text-red-500 mt-2">
+        <p className="text-red-500 mt-0.5">
           The text you typed doesn’t match the given text.
         </p>
       )}
@@ -261,6 +266,56 @@ const Profile = ({
           </option>
         ))}
       </select>
+    </div>
+  );
+};
+
+const Results = ({ race }: { race: Race & { entrants: Entrant[] } }) => {
+  if (!race) {
+    return null;
+  }
+
+  const finishedEntrants = race.entrants
+    .filter((entrant) => entrant.finishedAt)
+    .sort((a, b) => (a.finishedAt || 0) - (b.finishedAt || 0));
+
+  const places = new Map(
+    finishedEntrants.map((entrant, index) => [entrant.id, index + 1])
+  );
+
+  return (
+    <div className="p-4 bg-white rounded-xl ring-1 ring-gray-900/10 shadow-sm space-y-4">
+      <div className="div grid grid-cols-[300px,1fr] gap-x-4 gap-y-2 items-center">
+        {race.entrants.map((entrant) => {
+          const place = places.get(entrant.id);
+          const wpm =
+            entrant.finishedAt && race.startedAt
+              ? Math.round(
+                  race.text.split(" ").length /
+                    ((entrant.finishedAt - race.startedAt) / (1_000 * 60))
+                )
+              : null;
+          return (
+            <Fragment key={entrant.id}>
+              <div>
+                {entrant.name === "" ? "Unnamed" : entrant.name}{" "}
+                {place && <span>(#{place})</span>}{" "}
+                {wpm && <span>{wpm} words/min</span>}
+              </div>
+              <div className="bg-gray-100 outline outline-gray-200 rounded-full relative h-6 p-0.5">
+                <div
+                  className={`size-5 rounded-full absolute ${
+                    entrant.finishedAt ? "bg-emerald-500" : "bg-cyan-500"
+                  }`}
+                  style={{
+                    marginLeft: `calc(${entrant.progress * 100}% - 1.5rem)`,
+                  }}
+                />
+              </div>
+            </Fragment>
+          );
+        })}
+      </div>
     </div>
   );
 };
