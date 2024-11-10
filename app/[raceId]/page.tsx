@@ -54,7 +54,7 @@ export default function RacePage() {
         </span>
       </Link>
       <div className="mt-4 grid grid-cols-[1fr_350px] gap-x-4">
-        <Typing race={race} />
+        <Typing race={race} entrantId={entrantId} />
         <Profile
           name={name}
           setName={setName}
@@ -67,7 +67,13 @@ export default function RacePage() {
   );
 }
 
-const Typing = ({ race }: { race?: Race & { entrants: Entrant[] } }) => {
+const Typing = ({
+  race,
+  entrantId,
+}: {
+  race?: Race & { entrants: Entrant[] };
+  entrantId: string;
+}) => {
   const raceHasStartTime = !!race?.startedAt;
   const msInFuture = race?.startedAt ? race.startedAt - Date.now() : null;
   const inRace = raceHasStartTime && msInFuture && msInFuture < 0;
@@ -90,6 +96,10 @@ const Typing = ({ race }: { race?: Race & { entrants: Entrant[] } }) => {
   if (!race) {
     return <div />;
   }
+
+  const thisEntrant = race?.entrants.find(
+    (entrant) => entrant.id === entrantId
+  );
 
   const startRace = () => {
     db.transact(tx.races[race.id].update({ startedAt: Date.now() + 5_000 }));
@@ -152,6 +162,27 @@ const Typing = ({ race }: { race?: Race & { entrants: Entrant[] } }) => {
     );
   }
 
+  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const value = e.target.value;
+    const changeLength = value.length - text.length;
+    if (changeLength > 1) {
+      return;
+    }
+    setText(value);
+
+    db.transact(
+      tx.entrants[entrantId].update({
+        progress: value.length / race.text.length,
+      })
+    );
+
+    if (value === race.text) {
+      db.transact(tx.entrants[entrantId].update({ finishedAt: Date.now() }));
+    }
+  };
+
+  const invalid = !race.text.startsWith(text);
+
   return (
     <div className="p-4 bg-white rounded-xl ring-1 ring-gray-900/10 shadow-sm">
       <div className="text-lg font-mono">{race.text}</div>
@@ -159,17 +190,21 @@ const Typing = ({ race }: { race?: Race & { entrants: Entrant[] } }) => {
       <textarea
         ref={textareaRef}
         value={text}
-        onChange={(e) => {
-          const value = e.target.value;
-          const changeLength = value.length - text.length;
-          if (changeLength > 1) {
-            return;
-          }
-          setText(value);
-        }}
-        className="mt-4 w-full rounded-lg border-gray-300 bg-gray-50 font-mono text-lg"
+        onChange={handleChange}
+        className={`mt-4 w-full rounded-lg bg-gray-50 font-mono text-lg ${
+          invalid
+            ? "bg-red-100 focus:ring-red-500 focus:border-red-500"
+            : "border-gray-300"
+        }`}
         autoFocus
+        disabled={!!thisEntrant?.finishedAt}
       ></textarea>
+
+      {invalid && (
+        <p className="text-red-500 mt-2">
+          The text you typed doesn’t match the given text.
+        </p>
+      )}
     </div>
   );
 };

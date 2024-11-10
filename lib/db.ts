@@ -7,11 +7,12 @@ export type Race = {
 };
 
 export type Entrant = {
+  id: string;
   raceId: string;
   name: string;
   team: string;
   progress: number;
-  completedAt?: number;
+  finishedAt?: number;
 };
 
 export const db = init<{

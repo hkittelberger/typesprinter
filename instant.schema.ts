@@ -10,7 +10,7 @@ export default i.graph(
       name: i.string(),
       team: i.string(),
       progress: i.number(),
-      completedAt: i.number().optional(),
+      finishedAt: i.number().optional(),
     }),
   },
   {
