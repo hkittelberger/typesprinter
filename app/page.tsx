@@ -1,8 +1,30 @@
 "use client";
 
-import Link from "next/link";
+import { db } from "@/lib/db";
+import { id, tx } from "@instantdb/react";
+import { useRouter } from "next/navigation";
+import useLocalStorage from "use-local-storage";
 
 export default function Home() {
+  const router = useRouter();
+  const [ownedRaceIds, setOwnedRaceIds] = useLocalStorage<string[]>(
+    "ownedRaceIds",
+    []
+  );
+
+  const handleCreateRace = () => {
+    const newId = id();
+    db.transact(
+      tx.races[newId].update({
+        text: "The quick black fox jumps over the lazy dog.",
+      })
+    );
+
+    setOwnedRaceIds([...ownedRaceIds, newId]);
+
+    router.push(`/${newId}`);
+  };
+
   return (
     <div className="grid place-items-center h-screen">
       <div className="space-y-8">
@@ -13,17 +35,12 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="flex flex-col gap-4">
-          <Link
-            href="/join"
-            className="px-4 py-3 rounded-full bg-white ring-1 ring-gray-950/10 font-medium"
-          >
-            Join an existing race
-          </Link>
-          <button onClick={() => {}} className="text-gray-700 font-medium">
-            Create a new race
-          </button>
-        </div>
+        <button
+          onClick={handleCreateRace}
+          className="text-gray-700 font-medium"
+        >
+          Create a new typing race
+        </button>
       </div>
     </div>
   );
