@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useEffect, useReducer, useRef, useState } from "react";
+import { Fragment, useEffect, useReducer, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { id, tx } from "@instantdb/react";
