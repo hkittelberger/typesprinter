@@ -4,6 +4,9 @@ import { db } from "@/lib/db";
 import { id, tx } from "@instantdb/react";
 import { useRouter } from "next/navigation";
 import useLocalStorage from "use-local-storage";
+import quotesJson from "./quotes.json";
+
+const NUM_QUOTES = 3;
 
 export default function Home() {
   const router = useRouter();
@@ -14,9 +17,18 @@ export default function Home() {
 
   const handleCreateRace = () => {
     const newId = id();
+
+    const quotes = [];
+
+    for (let i = 0; i < NUM_QUOTES; i++) {
+      quotes.push(
+        quotesJson[Math.floor(Math.random() * quotesJson.length)].text
+      );
+    }
+
     db.transact(
       tx.races[newId].update({
-        text: "The quick black fox jumps over the lazy dog.",
+        text: quotes.join(" ").trim(),
       })
     );
 
