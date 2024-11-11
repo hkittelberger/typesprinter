@@ -2,11 +2,12 @@
 
 import { Fragment, useEffect, useReducer, useRef, useState } from "react";
 import { useParams } from "next/navigation";
+import Link from "next/link";
 import { id, tx } from "@instantdb/react";
 import useLocalStorage from "use-local-storage";
+import TextareaAutosize from "react-textarea-autosize";
 import { db, Entrant, Race } from "@/lib/db";
 import { TEAMS } from "@/lib/constants";
-import Link from "next/link";
 
 export default function RacePage() {
   const { raceId } = useParams<{ raceId: string }>();
@@ -95,8 +96,6 @@ const Typing = ({
     };
     forceUpdateRecursive();
   }, [race?.startedAt]);
-
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   if (!race) {
     return <div />;
@@ -192,8 +191,7 @@ const Typing = ({
     <div className="p-4 bg-white rounded-xl ring-1 ring-gray-900/10 shadow-sm">
       <div className="text-lg font-mono">{race.text}</div>
 
-      <textarea
-        ref={textareaRef}
+      <TextareaAutosize
         value={text}
         onChange={handleChange}
         className={`mt-4 w-full rounded-lg bg-gray-50 font-mono text-lg ${
@@ -203,7 +201,7 @@ const Typing = ({
         }`}
         autoFocus
         disabled={!!thisEntrant?.finishedAt}
-      ></textarea>
+      />
 
       {invalid && (
         <p className="text-red-500 mt-0.5">
