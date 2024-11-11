@@ -50,7 +50,7 @@ export default function RacePage() {
       <Link href="/" className="text-gray-600">
         &larr;{" "}
         <span className="underline decoration-gray-400">
-          Start another race
+          Create another race
         </span>
       </Link>
 
