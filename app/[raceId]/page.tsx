@@ -234,7 +234,7 @@ const Profile = ({
           htmlFor="name"
           className="block text-sm font-medium text-gray-500"
         >
-          Your full name
+          Your name
         </label>
         <input
           id="name"
@@ -298,9 +298,14 @@ const Results = ({ race }: { race: Race & { entrants: Entrant[] } }) => {
           return (
             <Fragment key={entrant.id}>
               <div>
-                {entrant.name === "" ? "Unnamed" : entrant.name}{" "}
-                {place && <span>(#{place})</span>}{" "}
-                {wpm && <span>{wpm} words/min</span>}
+                <p className="font-medium">
+                  {entrant.name === "" ? "Unnamed" : entrant.name}{" "}
+                  {place && <span>(#{place})</span>}{" "}
+                  {wpm && <span>{wpm} words/min</span>}
+                </p>
+                <p className="text-sm font-medium text-gray-500">
+                  {entrant.team}
+                </p>
               </div>
               <div className="bg-gray-100 outline outline-gray-200 rounded-full relative h-6 p-0.5">
                 <div
