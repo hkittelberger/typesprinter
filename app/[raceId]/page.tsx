@@ -285,7 +285,7 @@ const Results = ({ race }: { race: Race & { entrants: Entrant[] } }) => {
 
   return (
     <div className="p-4 bg-white rounded-xl ring-1 ring-gray-900/10 shadow-sm space-y-4">
-      <div className="div grid grid-cols-[300px,1fr] gap-x-4 gap-y-2 items-center">
+      <div className="div grid grid-cols-[300px,1fr] gap-x-4 gap-y-1 items-center">
         {race.entrants.map((entrant) => {
           const place = places.get(entrant.id);
           const wpm =
