@@ -313,7 +313,9 @@ const Results = ({ race }: { race: Race & { entrants: Entrant[] } }) => {
                     entrant.finishedAt ? "bg-emerald-500" : "bg-cyan-500"
                   }`}
                   style={{
-                    marginLeft: `calc(${entrant.progress * 100}% - 1.5rem)`,
+                    marginLeft: `calc(${
+                      entrant.progress ? entrant.progress * 100 : 0
+                    }% - 1.5rem)`,
                   }}
                 />
               </div>
