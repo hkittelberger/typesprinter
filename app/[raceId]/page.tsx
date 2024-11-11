@@ -301,7 +301,7 @@ const Results = ({ race }: { race: Race & { entrants: Entrant[] } }) => {
                 <p className="font-medium">
                   {entrant.name === "" ? "Unnamed" : entrant.name}{" "}
                   {place && <span>(#{place})</span>}{" "}
-                  {wpm && <span>{wpm} words/min</span>}
+                  {wpm && <span>{wpm} wpm</span>}
                 </p>
                 <p className="text-sm font-medium text-gray-500">
                   {entrant.team}
