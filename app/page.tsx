@@ -5,6 +5,7 @@ import { id, tx } from "@instantdb/react";
 import { useRouter } from "next/navigation";
 import useLocalStorage from "use-local-storage";
 import quotesJson from "./quotes.json";
+import sillyJson from "./silly.json"
 
 const NUM_QUOTES = 3;
 
@@ -25,6 +26,10 @@ export default function Home() {
         quotesJson[Math.floor(Math.random() * quotesJson.length)].text
       );
     }
+
+    quotes.push(
+        sillyJson[Math.floor(Math.random() * sillyJson.length)].text
+      );
 
     db.transact(
       tx.races[newId].update({
