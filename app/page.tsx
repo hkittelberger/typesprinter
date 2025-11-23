@@ -27,9 +27,9 @@ export default function Home() {
       );
     }
 
-    quotes.push(
-        sillyJson[Math.floor(Math.random() * sillyJson.length)].text
-      );
+    // quotes.push(
+    //     sillyJson[Math.floor(Math.random() * sillyJson.length)].text
+    //   );
 
     db.transact(
       tx.races[newId].update({
